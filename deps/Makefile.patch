@@ -1,0 +1,13 @@
+diff --git a/Makefile.am b/Makefile.am
+index 182fd84..9c75d83 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -8,7 +8,7 @@ CXX_DIRS = stogo
+ CXX_LIBS = stogo/libstogo.la
+ endif
+ 
+-SUBDIRS = util direct cdirect $(CXX_DIRS) praxis luksan crs mlsl mma cobyla newuoa neldermead auglag bobyqa isres slsqp esch api . octave test swig
++SUBDIRS = util direct cdirect $(CXX_DIRS) praxis luksan crs mlsl mma cobyla newuoa neldermead auglag bobyqa isres slsqp esch api . octave test
+ EXTRA_DIST = autogen.sh nlopt.pc.in m4 CMakeLists.txt config.cmake.h.in
+ 
+ libnlopt@NLOPT_SUFFIX@_la_SOURCES = 
