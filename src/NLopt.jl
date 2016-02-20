@@ -1,4 +1,4 @@
-__precompile__()
+VERSION >= v"0.4.0-dev+6521" && __precompile__()
 
 module NLopt
 
@@ -33,7 +33,7 @@ function __init__()
         cfunction(nlopt_vcallback_wrapper, Void,
                   (Cuint, Ptr{Cdouble}, Cuint, Ptr{Cdouble}, Ptr{Cdouble},
                    Ptr{Void}))
-    
+
     # get the version of NLopt at runtime, not compile time
     global const NLOPT_VERSION = version()
 end
@@ -133,12 +133,12 @@ type Opt
     # need to store callback data for objective and constraints in
     # Opt so that they aren't garbage-collected.  cb[1] is the objective.
     cb::Vector{Callback_Data}
-    
+
     function Opt(p::_Opt)
         opt = new(p, Array(Callback_Data,1))
         finalizer(opt, destroy)
         opt
-    end        
+    end
     function Opt(algorithm::Integer, n::Integer)
         if algorithm < 0 || algorithm > NUM_ALGORITHMS
             throw(ArgumentError("invalid algorithm $algorithm"))
@@ -214,7 +214,7 @@ function copy(o::Opt)
                                 for i in 1:length(o.cb) ]
         ccall((:nlopt_munge_data,libnlopt), Void, (_Opt, Ptr{Void}, Any),
               n, munge_callback_ptr,
-              p::Ptr{Void} -> p==C_NULL ? C_NULL : 
+              p::Ptr{Void} -> p==C_NULL ? C_NULL :
                               pointer_from_objref(n.cb[cbi[p]]))
     catch e0
         # nlopt_munge_data not available, punt unless there is
@@ -274,7 +274,7 @@ qsym(args...) = Expr(:quote, symbol(string(args...)))
 macro GETSET(T, p)
     Tg = T == :Cdouble ? :Real : (T == :Cint || T == :Cuint ? :Integer : :Any)
     ps = symbol(string(p, "!"))
-    quote 
+    quote
         $(esc(p))(o::Opt) = ccall(($(qsym("nlopt_get_", p)),libnlopt),
                                   $T, (_Opt,), o)
         $(esc(ps))(o::Opt, val::$Tg) =
@@ -329,7 +329,7 @@ end
 
 force_stop!(o::Opt) = force_stop!(o, 1)
 
-local_optimizer!(o::Opt, lo::Opt) = 
+local_optimizer!(o::Opt, lo::Opt) =
   chkn(ccall((:nlopt_set_local_optimizer,libnlopt),
              Cenum, (_Opt, _Opt), o, lo))
 
@@ -343,7 +343,7 @@ function default_initial_step!(o::Opt, x::Vector{Cdouble})
     chkn(ccall((:nlopt_set_default_initial_step,libnlopt),
                Cenum, (_Opt, Ptr{Cdouble}), o, x))
 end
-default_initial_step!{T<:Real}(o::Opt, x::AbstractVector{T}) = 
+default_initial_step!{T<:Real}(o::Opt, x::AbstractVector{T}) =
   default_initial_step!(o, copy!(Array(Cdouble,length(x)), x))
 
 function initial_step!(o::Opt, dx::Vector{Cdouble})
@@ -355,7 +355,7 @@ function initial_step!(o::Opt, dx::Vector{Cdouble})
 end
 initial_step!{T<:Real}(o::Opt, dx::AbstractVector{T}) =
   initial_step!(o, copy!(Array(Cdouble,length(dx)), dx))
-initial_step!(o::Opt, dx::Real) = 
+initial_step!(o::Opt, dx::Real) =
   chkn(ccall((:nlopt_set_initial_step1,libnlopt),
              Cenum, (_Opt, Cdouble), o, dx))
 
@@ -368,7 +368,7 @@ function initial_step(o::Opt, x::Vector{Cdouble}, dx::Vector{Cdouble})
     dx
 end
 initial_step{T<:Real}(o::Opt, x::AbstractVector{T}) =
-    initial_step(o, copy!(Array(Cdouble,length(x)), x), 
+    initial_step(o, copy!(Array(Cdouble,length(x)), x),
                  Array(Cdouble, ndims(o)))
 
 ############################################################################
@@ -413,7 +413,7 @@ function nlopt_callback_wrapper(n::Cuint, x::Ptr{Cdouble},
     d = unsafe_pointer_to_objref(d_)::Callback_Data
     try
         res = convert(Cdouble,
-                      d.f(pointer_to_array(x, (convert(Int, n),)), 
+                      d.f(pointer_to_array(x, (convert(Int, n),)),
                           grad == C_NULL ? empty_grad
                           : pointer_to_array(grad, (convert(Int, n),))))
         return res::Cdouble
